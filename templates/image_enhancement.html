@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Page</title>
+    <style>
+        /* Basic styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .buttons {
+            display: flex;
+            flex-direction: column;
+        }
+        .button {
+            margin-bottom: 15px;
+        }
+        .button-heading {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: #fff;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .button-heading:hover {
+            background-color: #45a049;
+        }
+        .button-heading.subtask {
+            background-color: #2196F3;
+        }
+        .button-heading.subtask:hover {
+            background-color: #0b7dda;
+        }
+        .preview {
+            flex: 1;
+            margin-left: 20px;
+        }
+        .image-preview {
+            width: 100%;
+            height: 300px;
+            background-color: #f0f0f0;
+            background-image: url(''); /* URL of image preview */
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .next-button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .next-button {
+            padding: 10px 25px; /* Adjusted padding */
+            background-color: #2196F3;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .next-button:hover {
+            background-color: #0b7dda;
+        }
+        .image-preview img{
+            height: auto ;
+            width: auto;
+            object-fit: cover;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: transform 0.3s ease;
+            margin-top: 30px;
+        }
+        /* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    padding-top: 50px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.9);
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="buttons">
+        <div class="button">
+            <div class="button-heading" onclick="showPreview('image1')">Contrast Enhancement</div>
+            <button id='histogram_equal' class="button-heading subtask">Histogram Equalization</button>
+            <button id="ahe" class="button-heading subtask">AHE</button>
+            <button id="clahe" class="button-heading subtask">CLAHE</button>
+        </div>
+        <div class="button">
+            <div class="button-heading" onclick="showPreview('image2')">Noise Reduction</div>
+            <button id="gauss_noise" class="button-heading subtask">Gaussian filter</button>
+            <button id="median_noise" class="button-heading subtask">Median filter</button>
+            <button id="wavelet_noise" class="button-heading subtask">wavelet transform</button>
+        </div>
+        <div class="button">
+            <div class="button-heading" onclick="showPreview('image1')">Edge Enhancement</div>
+            <button id="laplacian_edge" class="button-heading subtask">Laplacian Filter</button>
+            <button id="highpass_edge" class="button-heading subtask">High pass filter</button>
+            <button id="unsharp_edge" class="button-heading subtask">Unsharp masking</button>
+        </div>
+        <div class="button">
+            <div class="button-heading" onclick="showPreview('image2')">Debluring</div>
+            <button id="wiener_deblur" class="button-heading subtask">Wiener Filter</button>
+            <button id="blind_deblur" class="button-heading subtask">Blind Deconvolution</button>
+        </div>
+        <div class="button">
+            <div class="button-heading" onclick="showPreview('image1')">Multi-scale Processing</div>
+            <button id="pyramid_multiscale" class="button-heading subtask">Pyramid Representation</button>
+            <button id="wavelet_multiscale" class="button-heading subtask">wavelet Transformation</button>
+        </div>
+        <div class="button">
+            <div class="button-heading" onclick="showPreview('image2')">Dynamic Range Adjustment</div>
+            <button id="log_DRA" class="button-heading subtask">Log Compression</button>
+            <button id="expo_DRA" class="button-heading subtask">Exponential transformation</button>
+        </div>
+    </div>
+    <div class="preview">
+        <div class="image-preview" id="image-preview">
+
+                {% for image_file in image_files %}
+                    <img id="myImage" src="{{ url_for('static', filename='operations/' + image_file) }}" alt="Image">
+                {% endfor %}
+
+        </div>
+    </div>
+</div>
+
+
+  
+<div class="next-button-container">
+    <form action="{{ url_for('geometrical_transformation_page') }}">
+        <button id="navigate" class="next-button" type="submit">Next</button>
+    </form>
+</div>
+
+<div class="modal" id="imageModal">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="modal-image">
+    <div id="caption"></div>
+</div>
+
+<script>
+// Get the modal
+var modal = document.getElementById("imageModal");
+
+// Get the image and insert it inside the modal
+var img = document.getElementsByClassName("image-preview");
+var modalImg = document.getElementById("modal-image");
+// var img = document.getElementById("img_url");
+var captionText = document.getElementById("caption");
+
+for (var i = 0; i < img.length; i++) {
+    console.log("img",img[0])
+    img[i].onclick = function(){
+        var image = document.getElementById("myImage");
+        var imageUrl = image.getAttribute("src");
+        modal.style.display = "block";
+        modalImg.src = imageUrl; // Set the src attribute of modal image to the src attribute of the clicked image
+        captionText.innerHTML = this.alt;
+    }
+}
+
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("close")[0];
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() { 
+    modal.style.display = "none";
+}
+
+
+
+    function showPreview(image) {
+        // You can implement this function to change the image preview based on the button clicked
+        // For example:
+        var preview = document.getElementById('image-preview');
+        preview.style.backgroundImage = "url('/uploads/' + image + '.jpg')";
+    }
+
+
+    
+    document.getElementById('histogram_equal').addEventListener('click', function() {
+        applyHistogramEqualization();
+    });
+      
+      document.getElementById('ahe').addEventListener('click', function() {
+        ahe();
+    });
+      
+      document.getElementById('clahe').addEventListener('click', function() {
+        clahe();
+    });
+      
+      document.getElementById('gauss_noise').addEventListener('click', function() {
+        gauss_noise();
+    });
+      
+      document.getElementById('median_noise').addEventListener('click', function() {
+        median_noise();
+    });
+      
+      document.getElementById('wavelet_noise').addEventListener('click', function() {
+        wavelet_noise();
+    });
+      
+      document.getElementById('laplacian_edge').addEventListener('click', function() {
+        laplacian_edge();
+    });
+      
+      document.getElementById('highpass_edge').addEventListener('click', function() {
+        highpass_edge();
+    });
+      
+      document.getElementById('unsharp_edge').addEventListener('click', function() {
+        unsharp_edge();
+    });
+      
+      document.getElementById('wiener_deblur').addEventListener('click', function() {
+        wiener_deblur();
+    });
+      
+      document.getElementById('blind_deblur').addEventListener('click', function() {
+        blind_deblur();
+    });
+      
+      document.getElementById('pyramid_multiscale').addEventListener('click', function() {
+        pyramid_multiscale();
+    });
+      
+      document.getElementById('wavelet_multiscale').addEventListener('click', function() {
+        wavelet_multiscale();
+    });
+      
+      document.getElementById('log_DRA').addEventListener('click', function() {
+        log_DRA();
+    });
+       
+       document.getElementById('expo_DRA').addEventListener('click', function() {
+        expo_DRA();
+    });
+
+    function applyHistogramEqualization() {
+        fetch('/cla_histogram_equalization', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Histogram equalization applied successfully!');
+            } else {
+                alert('Error applying histogram equalization!');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error applying !');
+        });
+    }
+
+
+    function ahe() {
+        fetch('/adaptive_histogram_equalization', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.ok) {
+                alert(' applied successfully!');
+            } else {
+                alert('Error applying !');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error applying !');
+        });
+    }
+
+    
+    function clahe() {
+        fetch('/cla_histogram_equalization', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('cla_histogram_equalization equalization applied successfully!');
+            } else {
+                alert('Error applying cla_histogram_equalization equalization!');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error applying cla_histogram_equalization equalization!');
+        });
+    }
+
+    
+    function gauss_noise() {
+        fetch('/guass_noise', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('guass_noise applied successfully!');
+            } else {
+                alert('Error applying guass_noise!');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error applying guass_noise');
+        });
+    }
+
+    
+    
+        
+    function median_noise() {
+        fetch('/median_noise', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('median_noise  applied successfully!');
+            } else {
+                alert('Error applying median_noise !');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error applying median_noise !');
+        });
+    }
+
+    
+    
+        
+    function wavelet_noise() {
+        fetch('/wavelet_noise', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('wavelet_noisewavelet_noise applied successfully!');
+            } else {
+                alert('Error applying wavelet_noise equalization!');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error applying wavelet_noise equalization!');
+        });
+    }
+
+    
+        
+    function laplacian_edge() {
+        fetch('/laplacian_edge', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.ok) {
+                alert(' applied successfully!');
+            } else {
+                alert('Error applying !');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error applying !');
+        });
+    }
+
+    
+        
+    function highpass_edge() {
+        fetch('/highpass_edge', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.ok) {
+                alert(' applied successfully!');
+            } else {
+                alert('Error applying !');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error applying !');
+        });
+    }
+
+    
+        
+    function unsharp_edge() {
+        fetch('/unsharp_edge', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.ok) {
+                alert(' applied successfully!');
+            } else {
+                alert('Error applying !');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error applying !');
+        });
+    }
+
+    
+        
+    function wiener_deblur() {
+        fetch('/wiener_deblur', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.ok) {
+                alert(' applied successfully!');
+            } else {
+                alert('Error applying !');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error applying !');
+        });
+    }
+
+    
+        
+    function blind_deblur() {
+        fetch('/blind_deconvolution', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.ok) {
+                alert(' applied successfully!');
+            } else {
+                alert('Error applying !');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error applying !');
+        });
+    }
+
+    
+        
+    function pyramid_multiscale() {
+        fetch('/pyramid_multiscale', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.ok) {
+                alert(' applied successfully!');
+            } else {
+                alert('Error applying !');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error applying !');
+        });
+    }
+
+    
+        
+    function wavelet_multiscale() {
+        fetch('/wavelet_multiscale', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.ok) {
+                alert(' applied successfully!');
+            } else {
+                alert('Error applying !');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error applying !');
+        });
+    }
+
+    
+        
+    function log_DRA() {
+        fetch('/logcompression_dra', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.ok) {
+                alert(' applied successfully!');
+            } else {
+                alert('Error applying !');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error applying !');
+        });
+    }
+
+    
+        
+    function expo_DRA() {
+        fetch('/exponential_dra', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.ok) {
+                alert(' applied successfully!');
+            } else {
+                alert('Error applying !');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error applying !');
+        });
+    }
+    
+
+</script>
+
+</body>
+</html>
+
+
+
+
+

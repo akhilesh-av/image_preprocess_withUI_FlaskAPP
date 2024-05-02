@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Processing</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  #container {
+    display: flex;
+    width: 80%;
+    height: 80%;
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  }
+  #uploadSection {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    border-right: 1px solid #ccc;
+  }
+  #previewSection {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    max-height: 100%;
+  }
+  .preview-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: transform 0.3s ease;
+  }
+  .preview-image:hover {
+    transform: scale(1.1);
+  }
+  .popup {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    text-align: center;
+  }
+  .popup img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 5px;
+  }
+  #nextButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    position: absolute;
+    bottom: 20px;
+    left: 20px; /* Changed to left */
+  }
+  #nextButton:hover {
+    background-color: #45a049;
+  }
+  #nextButton:active {
+    background-color: #3e8e41;
+  }
+  #navigate {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    position: absolute;
+    bottom: 20px;
+    right: 200px;
+  }
+  #navigate:hover {
+    background-color: #45a049;
+  }
+  #navigate:active {
+    background-color: #3e8e41;
+  }
+  h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+</style>
+
+</head>
+<body>
+
+<div id="container">
+  <div id="uploadSection">
+    <h2>Image Processing</h2>
+    <input type="file" id="fileInput" accept="image/*" multiple>
+    <button id="nextButton">UPLOAD</button> <!-- Moved to top division -->
+  </div>
+
+  <div id="previewSection">
+    <h2>Preview</h2> <!-- Added a title -->
+    <div class="preview-container" id="previewContainer"></div>
+  </div>
+</div>
+
+<div class="popup" id="popup">
+  <span onclick="closePopup()" style="cursor: pointer; color: #fff; position: absolute; top: 10px; right: 20px;">&times;</span>
+  <img id="popupImage">
+</div>
+
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const previewContainer = document.getElementById('previewContainer');
+  const popup = document.getElementById('popup');
+  const popupImage = document.getElementById('popupImage');
+
+  fileInput.addEventListener('change', function() {
+    previewImages(this.files);
+  });
+
+  function previewImages(files) {
+    previewContainer.innerHTML = '';
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.classList.add('preview-image');
+          img.onclick = function() {
+            openPopup(img.src);
+          };
+          previewContainer.appendChild(img);
+        };
+        reader.readAsDataURL(files[i]);
+      }
+    }
+  }
+
+  function openPopup(imageSrc) {
+    popupImage.src = imageSrc;
+    popup.style.display = 'block';
+  }
+
+  function closePopup() {
+    popup.style.display = 'none';
+  }
+
+  document.getElementById('nextButton').addEventListener('click', function() {
+    const images = document.querySelectorAll('.preview-image');
+    const formData = new FormData();
+
+    images.forEach((image, index) => {
+      const file = dataURLtoFile(image.src, `image_${index}.jpg`);
+      formData.append('images[]', file);
+    });
+
+    fetch('/upload', {
+      method: 'POST',
+      body: formData
+    }).then(response => {
+      if (response.ok) {
+        alert('Images uploaded successfully!');
+        //  window.location.href = './image_enhancement.html';
+        
+      } else {
+        alert('Error uploading images!');
+      }
+    }).catch(error => {
+      console.error('Error:', error);
+      alert('Error uploading images!');
+    });
+  });
+
+  function dataURLtoFile(dataURL, filename) {
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+  }
+</script>
+
+</body>
+</html>
